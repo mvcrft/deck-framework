@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>deck-nav — modes showcase</title>
+<!-- design system (sibling repo) -->
+<link rel="stylesheet" href="../movecraft-design-system-open/theme-movecraft.css">
+<link rel="stylesheet" href="../movecraft-design-system-open/fonts.css">
+<!-- framework -->
+<link rel="stylesheet" href="deck.css">
+<link rel="stylesheet" href="deck-nav.css">
+<style>
+  /* ---- showcase control bar (not part of the framework) ---- */
+  .sc-bar {
+    position: fixed; z-index: 200; left: 50%; bottom: 20px; transform: translateX(-50%);
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    padding: 10px 12px; background: var(--surface);
+    border: 1px solid var(--rule-strong); box-shadow: 0 6px 30px rgba(0,0,0,.14);
+    font-family: var(--font-body); font-size: .72rem;
+    text-transform: uppercase; letter-spacing: .1em;
+  }
+  .sc-bar__grp { display: flex; gap: 4px; align-items: center; }
+  .sc-bar__lab { color: var(--gold); margin-right: 4px; }
+  .sc-bar button {
+    font: inherit; text-transform: uppercase; letter-spacing: .1em;
+    padding: 6px 11px; background: transparent; color: var(--muted);
+    border: 1px solid var(--rule-strong); cursor: pointer;
+    transition: color .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .sc-bar button:hover { color: var(--accent); border-color: var(--accent); }
+  .sc-bar button[aria-pressed="true"] { color: var(--paper); background: var(--accent); border-color: var(--accent); }
+  .sc-bar__sep { width: 1px; height: 22px; background: var(--rule-strong); margin: 0 2px; }
+  .sc-hint {
+    position: fixed; z-index: 200; left: 50%; bottom: 74px; transform: translateX(-50%);
+    font-family: var(--font-body); font-size: .72rem; color: var(--faint);
+    background: color-mix(in srgb, var(--surface) 88%, transparent); padding: 4px 10px;
+    white-space: nowrap;
+  }
+  /* the "appendix" mock page shown when a toggle pill is clicked */
+  .sc-appendix {
+    position: fixed; inset: 0; z-index: 10; background: var(--paper);
+    display: none; overflow-y: auto; padding: clamp(48px,8vh,90px) clamp(24px,6vw,64px);
+  }
+  .sc-appendix.is-on { display: block; }
+  /* on the mock appendix, hide the deck chrome so the persistent return
+     mark (a fixed nav button above this panel) is clearly visible */
+  body.sc-appendix-on .deck,
+  body.sc-appendix-on .deck-footer,
+  body.sc-appendix-on .deck-arrows,
+  body.sc-appendix-on .deck-dots,
+  body.sc-appendix-on .deck-hint { display: none !important; }
+  .sc-appendix h1 {
+    font-family: var(--font-title); font-synthesis: none; color: var(--accent);
+    text-transform: lowercase; font-weight: 500; font-size: clamp(2.4rem,6vw,3.4rem);
+    border-bottom: 2px solid var(--ink); padding-bottom: 14px; margin-bottom: 24px;
+  }
+  .sc-appendix p { font-family: var(--font-body); color: var(--muted); max-width: 60ch; line-height: 1.618; }
+</style>
+</head>
+<!-- No data-deck-nav here: the showcase drives the component via the JS
+     API (DeckNav.mount) so it can switch modes live. Real decks just set
+     data-deck-nav="menu|toc|toggle" on <body> and skip all this. -->
+<body>
+
+  <div class="deck-progress"></div>
+
+  <main class="deck">
+    <section class="slide" data-crumb="none">
+      <div class="slide__inner">
+        <p class="kicker">deck-nav · framework demo</p>
+        <h1 class="title">navigation</h1>
+        <p class="statement">One configurable component. Pick the mode that fits the talk — use the bar below.</p>
+      </div>
+    </section>
+    <section class="slide" data-toc="The Work" data-crumb="work">
+      <div class="slide__inner">
+        <p class="kicker">the work</p>
+        <h1 class="title">the work</h1>
+        <p class="statement">Motion design, title sequences, and generative visuals.</p>
+      </div>
+    </section>
+    <section class="slide" data-toc="Downloads" data-crumb="downloads">
+      <div class="slide__inner">
+        <p class="kicker">open source</p>
+        <h1 class="title">downloads</h1>
+        <p class="statement">Every source file — After Effects, Illustrator, Photoshop, Cinema 4D — free to learn from.</p>
+      </div>
+    </section>
+    <section class="slide" data-toc="Instructions" data-crumb="instructions">
+      <div class="slide__inner">
+        <p class="kicker">how to use</p>
+        <h1 class="title">instructions</h1>
+        <p class="statement">Grab Source Files Part 1 &amp; 2 and dig in. Learn, remix, and share.</p>
+      </div>
+    </section>
+    <section class="slide" data-toc="Credits" data-crumb="credits">
+      <div class="slide__inner">
+        <p class="kicker">credits</p>
+        <h1 class="title">have fun</h1>
+        <p class="statement">Movecraft is the work of Colin Evoy Sebestyen.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="deck-footer">
+    <span class="deck-footer__brand">
+      <img class="deck-footer__logo" src="logo.svg" alt="">
+      deck-nav showcase
+    </span>
+    <span class="deck-footer__date">2026</span>
+  </footer>
+
+  <nav class="deck-dots" aria-label="Slide navigation"></nav>
+  <div class="deck-arrows">
+    <button type="button" data-nav="prev" aria-label="Previous slide">&uarr;</button>
+    <button type="button" data-nav="next" aria-label="Next slide">&darr;</button>
+  </div>
+  <div class="deck-blackout" aria-hidden="true"></div>
+
+  <!-- Appendix/Resources source (menu mode clones these) -->
+  <template class="deck-nav-resources">
+    <a href="#part1"  data-desc="A directory of Adobe (AE/AI/PSD) and Cinema 4D source files." data-pdf="#part1.zip" data-dl="zip">Source Files — Part 1</a>
+    <a href="#part2"  data-desc="The rest of the project directories, plus a few VDMX5 files." data-pdf="#part2.zip" data-dl="zip">Source Files — Part 2</a>
+    <a href="#splice" data-desc="Festival title package — After Effects + Cinema 4D." data-pdf="#splice.zip" data-dl="zip">Splice Festival</a>
+    <a href="#pixel"  data-desc="Generative visual system — VDMX5 + Cinema 4D." data-pdf="#pixel.zip" data-dl="zip">Pixel Spirit</a>
+  </template>
+
+  <!-- mock appendix page for the toggle demo -->
+  <div class="sc-appendix" id="scAppendix">
+    <h1>downloads.</h1>
+    <p>This is where the 2-page paradigm lands you. One click from the deck to here, one click back — no menu, no overlay. Good for a companion page like a downloads index.</p>
+    <p style="margin-top:24px"><em>(In a real deck this is your downloads.html — every source file, free to learn from.)</em></p>
+  </div>
+
+  <!-- showcase control bar -->
+  <div class="sc-hint" id="scHint">click <strong>menu</strong> (top-right) — or press <strong>m</strong></div>
+  <div class="sc-bar" role="group" aria-label="Showcase controls">
+    <div class="sc-bar__grp">
+      <span class="sc-bar__lab">mode</span>
+      <button type="button" data-mode="menu"   aria-pressed="true">menu</button>
+      <button type="button" data-mode="toc"    aria-pressed="false">toc</button>
+      <button type="button" data-mode="toggle" aria-pressed="false">toggle</button>
+      <button type="button" data-mode="off"    aria-pressed="false">off</button>
+    </div>
+    <span class="sc-bar__sep"></span>
+    <div class="sc-bar__grp" id="scStyleGrp">
+      <span class="sc-bar__lab">style</span>
+      <button type="button" data-style="editorial" aria-pressed="false">editorial</button>
+      <button type="button" data-style="drawer"    aria-pressed="true">drawer</button>
+    </div>
+    <span class="sc-bar__sep"></span>
+    <div class="sc-bar__grp">
+      <span class="sc-bar__lab">theme</span>
+      <button type="button" id="scTheme">dark</button>
+    </div>
+  </div>
+
+  <script src="deck.js"></script>
+  <script src="deck-nav.js"></script>
+  <script>
+    (function () {
+      var qp = new URLSearchParams(location.search);
+      var mode = qp.get('mode') || 'menu', style = qp.get('style') || 'drawer';
+      var hint = document.getElementById('scHint');
+      var appendix = document.getElementById('scAppendix');
+      var styleGrp = document.getElementById('scStyleGrp');
+
+      function press(sel, val, attr) {
+        document.querySelectorAll(sel).forEach(function (b) {
+          b.setAttribute('aria-pressed', String(b.getAttribute(attr) === val));
+        });
+      }
+
+      function remount() {
+        appendix.classList.remove('is-on');
+        document.body.classList.remove('sc-appendix-on');
+        styleGrp.style.opacity = (mode === 'menu' || mode === 'toc') ? '1' : '.35';
+        styleGrp.style.pointerEvents = (mode === 'menu' || mode === 'toc') ? 'auto' : 'none';
+        if (mode === 'toggle') {
+          DeckNav.mount({ mode: 'toggle', target: '#', dir: 'forward' });
+          hint.innerHTML = 'click the round <strong>a.</strong> (upper-right) &mdash; then <strong>&larr;</strong> to return';
+        } else if (mode === 'off') {
+          DeckNav.unmount();
+          hint.innerHTML = 'no nav chrome — drive with keys / clicker only';
+        } else {
+          DeckNav.mount({ mode: mode, title: (mode === 'toc' ? 'contents' : 'menu'), resLabel: 'downloads', style: style });
+          hint.innerHTML = 'hover the navicon (upper-right) to reveal <strong>' +
+            (mode === 'toc' ? 'contents' : 'menu') + '</strong>, click to open — or press <strong>m</strong>';
+        }
+      }
+
+      document.querySelectorAll('[data-mode]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          mode = b.getAttribute('data-mode'); press('[data-mode]', mode, 'data-mode'); remount();
+        });
+      });
+      document.querySelectorAll('[data-style]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          style = b.getAttribute('data-style'); press('[data-style]', style, 'data-style'); remount();
+        });
+      });
+
+      // toggle-mode pill flips to the mock appendix instead of navigating
+      document.body.addEventListener('click', function (e) {
+        var pill = e.target.closest('.deck-nav-btn--toggle');
+        if (!pill) return;
+        e.preventDefault();
+        if (pill.getAttribute('data-dir') === 'back') {
+          appendix.classList.remove('is-on');
+          document.body.classList.remove('sc-appendix-on');
+          DeckNav.mount({ mode: 'toggle', target: '#', dir: 'forward' });
+        } else {
+          appendix.classList.add('is-on');
+          document.body.classList.add('sc-appendix-on');
+          DeckNav.mount({ mode: 'toggle', target: '#', dir: 'back' });
+        }
+      });
+
+      var themeBtn = document.getElementById('scTheme');
+      function setTheme(dark) {
+        document.documentElement.classList.toggle('theme-dark', dark);
+        themeBtn.textContent = dark ? 'light' : 'dark';
+      }
+      themeBtn.addEventListener('click', function () {
+        setTheme(!document.documentElement.classList.contains('theme-dark'));
+      });
+
+      // reflect any query-param preset in the controls
+      press('[data-mode]', mode, 'data-mode');
+      press('[data-style]', style, 'data-style');
+      if (qp.get('theme') === 'dark') setTheme(true);
+      remount();
+
+      // ?open=1 auto-opens the overlay (used for screenshots / deep links).
+      // Click the trigger, then force the open state so headless captures
+      // don't race the requestAnimationFrame transition.
+      if (qp.get('open') === '1') {
+        var t = document.querySelector('.deck-nav-btn--menu');
+        if (t) t.click();
+        var ov = document.querySelector('.deck-nav-overlay');
+        if (ov) { ov.hidden = false; ov.classList.add('is-open'); }
+      }
+      // ?page=appendix (toggle mode) flips to the appendix + return mark
+      if (mode === 'toggle' && qp.get('page') === 'appendix') {
+        var fwd = document.querySelector('.deck-nav-btn--toggle[data-dir="forward"]');
+        if (fwd) fwd.click();
+      }
+    })();
+  </script>
+</body>
+</html>

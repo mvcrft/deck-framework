@@ -1,0 +1,589 @@
+/* =============================================================
+   DECK FRAMEWORK — deck.css   (structure / engine only)
+   A reusable slide engine. Hardcodes no colors or fonts — it consumes
+   the CSS variables defined in theme-movecraft.css. Swap that theme file
+   to re-skin; deck.css never changes.
+   Load order: theme-movecraft.css -> fonts.css -> deck.css -> deck-nav.css
+   To make a new deck: copy the framework files + fonts/ + logo, then write
+   a new index.html with your own <section class="slide">s.
+   ============================================================= */
+
+/* ---------- THEME + FONTS (external) ------------------------
+   Design tokens: theme-movecraft.css   ·   @font-face: fonts.css
+   Load order: theme-movecraft.css -> fonts.css -> deck.css -> deck-nav.css
+   deck.css is structure/engine only and hardcodes no colors/fonts.
+   ------------------------------------------------------------ */
+
+/* ---------- RESET / BASE (engine) --------------------------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;              /* the deck scrolls, not the body */
+}
+
+/* ---------- DECK / SCROLL-SNAP CONTAINER (engine) ----------- */
+.deck {
+  height: 100vh;
+  height: 100svh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.deck::-webkit-scrollbar { display: none; }
+
+.slide {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  align-items: center;
+  padding: clamp(64px, 10vh, 120px) var(--pad) clamp(96px, 14vh, 140px);
+}
+
+.slide__inner {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  /* fade / rise-in, toggled by .is-active on the section */
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.slide--wide .slide__inner { max-width: 1200px; }
+.slide.is-active .slide__inner { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .deck { scroll-behavior: auto; }
+  .slide__inner { transition: none; opacity: 1; transform: none; }
+  .wordgrid li { transition: none; opacity: 1; transform: none; }
+  .mv-card--bar::before { transition: none; width: 4px; }
+}
+
+/* ---------- TYPOGRAPHY PRIMITIVES (theme-ish) -------------- */
+/* Section eyebrow — small uppercase gold label.
+   (The big editorial folio numeral is removed for now; to bring it back, style
+   a `.idx` span larger in Outsiders and shift its color on .slide.is-active.) */
+.kicker {
+  font-family: var(--font-body);
+  font-size: clamp(11px, 1.1vw, 13px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: clamp(18px, 3.5vh, 38px);
+}
+
+.title {
+  font-family: var(--font-title);
+  color: var(--accent);
+  font-weight: 400;
+  text-transform: lowercase;
+  line-height: 0.98;
+  font-size: clamp(48px, 9vw, 120px);
+  margin-bottom: clamp(24px, 4.5vh, 52px);
+}
+
+.statement {
+  font-size: clamp(22px, 3.4vw, 44px);
+  line-height: 1.32;
+  max-width: 40ch;
+}
+
+.lead {
+  font-size: clamp(18px, 2.2vw, 27px);
+  line-height: 1.4;
+  max-width: 26ch;
+  color: var(--ink);
+}
+.followup {
+  font-size: clamp(15px, 1.7vw, 21px);
+  line-height: 1.45;
+  max-width: 34ch;
+  color: var(--muted);
+  margin-top: clamp(18px, 3vh, 32px);
+}
+
+/* ---------- SLIDE: WORD LIST ------------------------------- */
+.wordgrid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: clamp(20px, 3vh, 34px) clamp(34px, 5.5vw, 96px);
+  margin-top: clamp(24px, 4vh, 44px);
+}
+.wordgrid li {
+  list-style: none;
+  font-size: clamp(18px, 2vw, 26px);
+  line-height: 1.15;
+  color: var(--ink);
+  border-bottom: 1.5px solid var(--ink);
+  padding-bottom: 2px;
+  /* staggered entrance: hidden until the slide is active, then each term
+     rises in on a delay set by --i (assigned per-item in deck.js) */
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .5s ease, transform .5s ease,
+              color .18s ease, border-color .18s ease;
+  transition-delay: calc(var(--i, 0) * 45ms);
+}
+.slide.is-active .wordgrid li { opacity: 1; transform: none; }
+.slide:not(.is-active) .wordgrid li { transition-delay: 0s; }
+.wordgrid li:hover { color: var(--accent); border-color: var(--accent); }
+
+/* prompt caption below the word cloud — small, full width */
+.prompt {
+  font-size: clamp(15px, 1.5vw, 19px);
+  line-height: 1.45;
+  color: var(--ink);
+  margin-top: clamp(26px, 4.5vh, 48px);
+}
+.prompt em { font-style: italic; }
+
+/* ---------- SLIDE: VISION → MISSION → ACTION --------------- */
+.vma {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 2.5vw, 40px);
+  flex-wrap: wrap;
+}
+.vma__word {
+  font-family: var(--font-title);
+  color: var(--accent);
+  text-transform: lowercase;
+  font-size: clamp(40px, 7vw, 88px);
+  line-height: 1;
+}
+.vma__arrow {
+  flex: 0 0 auto;
+  width: clamp(30px, 4vw, 64px);
+  height: 2px;
+  background: var(--ink);
+  position: relative;
+}
+.vma__arrow::after {
+  content: '';
+  position: absolute;
+  right: -1px; top: 50%;
+  width: 12px; height: 12px;
+  border-top: 2px solid var(--ink);
+  border-right: 2px solid var(--ink);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+/* vision / mission / action — each word defined once, arrows between */
+.vma-defs {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(14px, 2.5vw, 44px);
+  margin-top: clamp(8px, 2vh, 24px);
+}
+.vd { flex: 1 1 0; min-width: 0; }
+.vd__word {
+  display: block;
+  font-family: var(--font-title);
+  color: var(--accent);
+  text-transform: lowercase;
+  font-size: clamp(34px, 5.4vw, 76px);
+  line-height: 1;
+}
+.vd__rule {
+  display: block;
+  border-top: 1px dashed var(--rule);
+  margin: clamp(16px, 2.4vh, 26px) 0 clamp(12px, 1.8vh, 18px);
+}
+.vd__def {
+  font-size: clamp(16px, 1.7vw, 22px);
+  line-height: 1.4;
+  color: var(--ink);
+  max-width: 22ch;
+}
+.vma-defs > .vma__arrow { align-self: flex-start; margin-top: clamp(16px, 2.4vw, 32px); }
+
+/* Reveal vision → mission → action slowly and deliberately. Words rise + fade;
+   the arrows DRAW ON — the shaft grows left→right with the head leading the tip.
+   --step sets the (deliberate) pace between items; --i is set per child in deck.js. */
+.vma-defs { --step: 760ms; }
+
+/* words: slow rise + fade, one after another */
+.vma-defs > .vd {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity .7s ease, transform .7s ease;
+  transition-delay: calc(var(--i, 0) * var(--step));
+}
+.slide.is-active .vma-defs > .vd { opacity: 1; transform: none; }
+
+/* arrows: base fade (mobile fallback, where the arrow is a ↓ glyph) */
+.vma-defs > .vma__arrow {
+  opacity: 0;
+  transition: opacity .25s ease;
+  transition-delay: calc(var(--i, 0) * var(--step));
+}
+.slide.is-active .vma-defs > .vma__arrow { opacity: 1; }
+
+.slide:not(.is-active) .vma-defs > .vd,
+.slide:not(.is-active) .vma-defs > .vma__arrow { transition-delay: 0s; }
+
+/* desktop: draw the shaft. width 0 → full; the ::after arrowhead sits at the
+   right edge, so it rides the growing tip like a pen drawing the line. */
+@media (min-width: 721px) {
+  .vma-defs > .vma__arrow {
+    width: 0;
+    transition: width .6s cubic-bezier(.6, 0, .25, 1), opacity .25s ease;
+    /* re-declare after the shorthand, which resets delay to 0 */
+    transition-delay: calc(var(--i, 0) * var(--step));
+  }
+  .slide.is-active .vma-defs > .vma__arrow { width: clamp(30px, 4vw, 64px); }
+  .slide:not(.is-active) .vma-defs > .vma__arrow { width: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vma-defs > .vd { transition: none; opacity: 1; transform: none; }
+  .vma-defs > .vma__arrow { transition: none; opacity: 1; width: clamp(30px, 4vw, 64px); }
+}
+
+/* ---------- SLIDE: COMBINED STATEMENTS --------------------- */
+.vma--header { justify-content: flex-start; gap: clamp(10px, 2vw, 28px); margin-bottom: clamp(28px, 5vh, 56px); }
+.vma--header .vma__word { font-size: clamp(30px, 5vw, 62px); }
+.vma--header .vma__arrow { width: clamp(28px, 3.5vw, 56px); }
+
+.progression p { max-width: 40ch; line-height: 1.34; }
+.progression .p-vision  { font-size: clamp(18px, 2.4vw, 30px); color: var(--muted); margin-bottom: clamp(18px, 3vh, 30px); }
+.progression .p-mission { font-size: clamp(18px, 2.4vw, 30px); color: var(--ink); }
+
+/* ---------- SLIDE: CLOSE ----------------------------------- */
+.close-quote {
+  font-size: clamp(20px, 2.8vw, 36px);
+  line-height: 1.38;
+  max-width: 40ch;
+}
+.close-quote .accent { color: var(--accent); }
+
+/* ---------- SLIDE: TWO-COLUMN (where it lives) ------------- */
+.subhead {
+  font-family: var(--font-title);
+  color: var(--accent);
+  text-transform: lowercase;
+  line-height: 1;
+  font-size: clamp(34px, 5vw, 64px);
+  margin-bottom: clamp(30px, 5.5vh, 56px);
+}
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(18px, 2.6vw, 34px);
+}
+/* Movecraft card: white surface on cream, warm border, sharp corners. */
+.col {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: clamp(20px, 3.2vh, 32px) clamp(22px, 2.6vw, 34px);
+}
+.col__head {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: clamp(20px, 2.2vw, 30px);
+  line-height: 1.2;
+  color: var(--ink);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px dashed var(--rule);
+}
+.col__head em { font-style: italic; color: var(--accent); }
+.col__body {
+  font-size: clamp(15px, 1.7vw, 21px);
+  line-height: 1.42;
+  color: var(--ink);
+  max-width: 34ch;
+}
+
+/* ---------- MOVECRAFT CARDS ---------------------------------
+   Card grid, .mv-card*, and .mv-badge* now live in the design
+   system: movecraft-design-system/components.css. Load that in any
+   content-dense deck. The slide-activated .mv-card--bar variant
+   (below) stays here because its reveal is tied to the deck engine.
+   ------------------------------------------------------------ */
+
+/* Optional "side tab": a left accent bar that grows in as an entrance.
+   Opt in per card with .mv-card--bar — nice for highlighting select cards. */
+.mv-card--bar { overflow: hidden; }
+.mv-card--bar::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0;
+  background: var(--accent);
+  transition: width .55s cubic-bezier(.6, 0, .25, 1);
+  transition-delay: .15s;
+}
+.slide.is-active .mv-card--bar::before { width: 4px; }
+.slide:not(.is-active) .mv-card--bar::before { transition-delay: 0s; }
+.mv-card--bar.mv-card--gold::before { background: var(--gold); }
+
+/* ---------- FIXED FOOTER (engine + brand) ----------------- */
+.deck-footer {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px var(--pad);
+  padding-top: 12px;
+  font-size: clamp(10px, 1.1vw, 12px);
+  color: var(--muted);
+  border-top: 1px dashed var(--rule);
+  background: linear-gradient(to top, var(--paper) 70%, transparent);
+  pointer-events: none;
+}
+.deck-footer__brand { display: flex; align-items: center; gap: 10px; }
+.deck-footer__logo { width: 26px; height: auto; display: block; opacity: .9; }
+.deck-footer__date { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+
+/* ---------- NAV CHROME (engine) --------------------------- */
+.deck-dots {
+  position: fixed;
+  right: clamp(14px, 2vw, 28px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.deck-dots button {
+  width: 9px; height: 9px;
+  padding: 0; border: none; border-radius: 50%;
+  background: var(--rule);
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease;
+}
+.deck-dots button:hover { background: var(--faint); }
+.deck-dots button[aria-current="true"] { background: var(--accent); transform: scale(1.35); }
+
+.deck-arrows {
+  position: fixed;
+  right: clamp(14px, 2vw, 28px);
+  bottom: clamp(56px, 9vh, 84px);
+  z-index: 30;
+  display: flex;
+  gap: 10px;
+}
+.deck-arrows button {
+  width: 40px; height: 40px;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: rgba(255,255,255,.7);
+  backdrop-filter: blur(4px);
+  color: var(--ink);
+  font-size: 16px; line-height: 1;
+  cursor: pointer;
+  display: grid; place-items: center;
+  transition: border-color .18s ease, color .18s ease, opacity .18s ease;
+}
+.deck-arrows button:hover { border-color: var(--accent); color: var(--accent); }
+.deck-arrows button:disabled { opacity: .3; cursor: default; }
+
+/* progress bar along the top */
+.deck-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0;
+  background: var(--accent);
+  z-index: 40;
+  transition: width .35s ease;
+}
+
+/* hint chip (dismisses after first nav) */
+.deck-hint {
+  position: fixed;
+  left: 50%; bottom: clamp(56px, 9vh, 84px);
+  transform: translateX(-50%);
+  z-index: 30;
+  font-size: 12px; letter-spacing: .04em;
+  color: var(--muted);
+  background: rgba(255,255,255,.8);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 7px 16px;
+  transition: opacity .4s ease;
+}
+.deck-hint.is-hidden { opacity: 0; pointer-events: none; }
+
+/* blackout overlay for presenting ( press B or . ) */
+.deck-blackout {
+  position: fixed; inset: 0;
+  background: var(--blackout);
+  z-index: 50;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s ease;
+}
+.deck-blackout.is-on { opacity: 1; pointer-events: auto; }
+
+/* ---------- RESPONSIVE ------------------------------------ */
+@media (max-width: 720px) {
+  /* let tall content grow past the viewport instead of clipping behind
+     the fixed footer; scroll-snap still aligns to each slide's start */
+  .slide {
+    align-items: flex-start;
+    height: auto;
+    min-height: 100svh;
+    padding-top: clamp(72px, 14vh, 120px);
+    padding-bottom: clamp(110px, 18vh, 150px);
+  }
+  .statement { max-width: none; }
+
+  /* stack V → M → A vertically. Use a glyph arrow so its metrics are
+     predictable and the space above/below it stays even. */
+  .vma { flex-direction: column; gap: clamp(10px, 2vh, 18px); align-items: flex-start; }
+  .vma--header { align-items: flex-start; }
+  .vma__arrow {
+    width: auto; height: auto; background: none;
+    margin: clamp(12px, 2vh, 20px) 0 clamp(12px, 2vh, 20px) 2px;
+  }
+  .vma__arrow::after {
+    content: '↓';
+    position: static;
+    width: auto; height: auto;
+    border: none; transform: none;
+    font-family: var(--font-body);
+    font-size: clamp(22px, 3.6vh, 30px);
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .vma-defs { flex-direction: column; align-items: flex-start; gap: 0; }
+  .vd__def { max-width: none; }
+
+  .two-col { grid-template-columns: 1fr; gap: clamp(24px, 5vh, 40px); }
+  .col__body { max-width: none; }
+
+  .deck-dots { display: none; }
+}
+
+/* ---------- CROSSFADE MODE (engine) ------------------------ */
+/* Opt-in: <main class="deck deck--fade">. Slides stack in place and
+   crossfade on .is-active instead of scroll-snapping. deck.js detects
+   the class and swaps scrolling for wheel/swipe navigation. */
+.deck--fade {
+  position: relative;
+  overflow: hidden;
+  scroll-snap-type: none;
+  --fade: .65s;
+}
+.deck--fade .slide {
+  position: absolute;
+  inset: 0;
+  height: auto;                /* override the 100svh slide height */
+  scroll-snap-align: none;
+  scroll-snap-stop: normal;
+  background: var(--paper);    /* opaque layers so fades read cleanly */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity var(--fade) ease,
+              visibility 0s linear var(--fade);
+}
+.deck--fade .slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 2;
+  transition: opacity var(--fade) ease;
+}
+/* tall content scrolls within its own slide (no page scroll in fade mode) */
+.deck--fade .slide { overflow-y: auto; }
+/* neighbors stay visible at opacity 0 and composited, so big photos are
+   already rasterized when their crossfade starts (deck.js sets .is-near) */
+.deck--fade .slide.is-near {
+  visibility: visible;
+  will-change: opacity;
+}
+
+/* ---------- BREADCRUMBS (engine) --------------------------- */
+/* Optional <nav class="deck-crumbs"> — deck.js fills it with one button
+   per unique data-crumb section and marks the active one. Slides without
+   data-crumb inherit the previous section; data-crumb="none" clears it. */
+.deck-crumbs {
+  position: fixed;
+  top: clamp(14px, 2.4vh, 24px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 26px);
+  transition: opacity .4s ease;
+}
+.deck-crumbs:empty { display: none; }
+.deck-crumbs.is-idle { opacity: .45; }   /* no section active (intro etc.) */
+.deck-crumbs button {
+  border: none;
+  background: none;
+  padding: 4px 2px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: clamp(11px, 1.1vw, 13px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+  border-bottom: 1px solid transparent;
+  transition: color .25s ease, border-color .25s ease, opacity .25s ease;
+}
+.deck-crumbs button:hover { color: var(--ink); }
+.deck-crumbs button[aria-current="true"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+/* separators between crumbs */
+.deck-crumbs button + button { position: relative; }
+.deck-crumbs button + button::before {
+  content: '·';
+  position: absolute;
+  left: calc(-1 * clamp(14px, 2vw, 26px) / 2);
+  transform: translateX(-50%);
+  color: var(--rule-strong);
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .deck-crumbs { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck--fade .slide { transition: none; }
+}
+
+/* =============================================================
+
+/* =============================================================
+   THEME TOGGLE — framework feature (2026-07-19)
+   Light is the default and is declared explicitly so browser
+   "auto dark mode" won't force-invert the deck. Press "d" or use
+   the .deck-theme button; choice persists in localStorage.
+   ============================================================= */
+
+.deck-theme {
+  position: fixed; top: 18px; right: 20px; z-index: 70;
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--rule-strong); background: var(--surface);
+  color: var(--muted); cursor: pointer; font-size: .9rem; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  opacity: .55; transition: opacity .2s, color .2s, border-color .2s;
+}
+.deck-theme:hover { opacity: 1; color: var(--accent); border-color: var(--accent); }

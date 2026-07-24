@@ -1,0 +1,197 @@
+/* =============================================================
+   DECK FRAMEWORK — deck-nav.css   (optional add-on module)
+   Styles for the deck-nav component (see deck-nav.js). Include after
+   deck.css. Everything derives from the deck's THEME variables, so it
+   themes light/dark for free.
+       <link rel="stylesheet" href="deck.css">
+       <link rel="stylesheet" href="deck-nav.css">
+   ============================================================= */
+
+/* ---- trigger / toggle pill -------------------------------- */
+.deck-nav-btn {
+  position: fixed; z-index: 60;
+  top: 18px; right: 20px;
+  display: inline-flex; align-items: center; gap: .5ch;
+  padding: 9px 16px;
+  font-family: var(--font-body);
+  font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--gold); background: var(--surface);
+  border: 1px solid var(--rule-strong); border-radius: 0;
+  cursor: pointer; text-decoration: none;
+  transition: color .14s ease, border-color .14s ease, background .14s ease;
+}
+.deck-nav-btn:hover,
+.deck-nav-btn:focus-visible { color: var(--accent); border-color: var(--accent); }
+.deck-nav-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.deck-nav-btn__arw { font-family: var(--font-body); opacity: .8; }
+
+/* menu / toc trigger: a round hamburger navicon under the theme toggle.
+   At rest it's an icon-only circle; on hover/focus the word ("menu" /
+   "contents") slides out to the left and it becomes a pill. */
+.deck-nav-btn--menu {
+  top: 60px; right: 20px;
+  height: 34px; min-width: 34px; padding: 0 8px; gap: 0; border-radius: 17px;
+  justify-content: flex-end; color: var(--muted); opacity: .55;
+  text-transform: none; letter-spacing: 0;
+}
+.deck-nav-btn--menu:hover,
+.deck-nav-btn--menu:focus-visible { opacity: 1; color: var(--accent); }
+.deck-nav-ham { flex: none; display: block; }
+.deck-nav-ham line { stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+.deck-nav-btn__label {
+  max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap;
+  font-size: .72rem; text-transform: uppercase; letter-spacing: .12em;
+  transition: max-width .2s ease, opacity .2s ease, margin-right .2s ease;
+}
+/* max-width just needs to exceed the widest label so it never clips; the
+   button still only grows to the label's real width. */
+.deck-nav-btn--menu:hover .deck-nav-btn__label,
+.deck-nav-btn--menu:focus-visible .deck-nav-btn__label { max-width: 16ch; opacity: 1; margin-right: 8px; }
+@media (prefers-reduced-motion: reduce) { .deck-nav-btn__label { transition: none; } }
+
+/* toggle: a compact round "a." mark, always upper-right, matching the
+   theme toggle it sits under. Persistent on both pages — "a." opens the
+   appendix, the return glyph on the appendix comes back to the deck. */
+.deck-nav-btn--toggle {
+  top: 60px; right: 20px; bottom: auto; left: auto;
+  width: 34px; height: 34px; padding: 0; gap: 0; border-radius: 50%;
+  justify-content: center;
+  font-family: var(--font-title); font-synthesis: none; font-style: normal;
+  font-size: .95rem; letter-spacing: 0; text-transform: none;
+  color: var(--muted); opacity: .55;
+}
+.deck-nav-btn--toggle:hover,
+.deck-nav-btn--toggle:focus-visible { opacity: 1; }
+.deck-nav-btn--toggle .deck-nav-btn__arw { font-size: 1.05rem; opacity: 1; }
+
+/* ---- overlay shell ---------------------------------------- */
+.deck-nav-overlay {
+  position: fixed; inset: 0; z-index: 90;
+  display: flex; opacity: 0; pointer-events: none;
+  transition: opacity .3s ease;
+}
+/* the class's display:flex would otherwise beat the UA [hidden] rule and
+   leave the closed overlay's scrim covering the page — keep hidden real */
+.deck-nav-overlay[hidden] { display: none; }
+.deck-nav-overlay.is-open { opacity: 1; pointer-events: auto; }
+.deck-nav-scrim {
+  position: absolute; inset: 0;
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+  -webkit-backdrop-filter: blur(6px) saturate(1.1); backdrop-filter: blur(6px) saturate(1.1);
+}
+/* the drawer leaves the deck partly visible, so darken its scrim a touch */
+.deck-nav-overlay[data-nav-style="drawer"] .deck-nav-scrim {
+  background: color-mix(in srgb, var(--ink) 26%, transparent);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+}
+
+/* ---- panel: editorial (full-bleed centred index) ---------- */
+.deck-nav-panel {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 1040px; margin: auto;
+  max-height: 100svh; overflow-y: auto;
+  padding: clamp(48px, 7vh, 96px) clamp(24px, 6vw, 72px);
+  transform: translateY(14px);
+  transition: transform .32s cubic-bezier(.2, .7, .2, 1);
+}
+.deck-nav-overlay.is-open .deck-nav-panel { transform: none; }
+
+.deck-nav-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 16px; margin-bottom: clamp(28px, 5vh, 52px);
+  border-bottom: 2px solid var(--ink); padding-bottom: 18px;
+}
+.deck-nav-title {
+  font-family: var(--font-title); font-synthesis: none;
+  color: var(--accent); text-transform: lowercase; font-weight: 500;
+  font-size: clamp(2.4rem, 6vw, 3.6rem); line-height: 1;
+}
+.deck-nav-x {
+  flex: none; width: 44px; height: 44px; border-radius: 0;
+  background: transparent; border: 1px solid var(--rule-strong);
+  color: var(--muted); font-size: 1.5rem; line-height: 1; cursor: pointer;
+  transition: color .14s ease, border-color .14s ease;
+}
+.deck-nav-x:hover,
+.deck-nav-x:focus-visible { color: var(--accent); border-color: var(--accent); }
+
+/* two zones side by side; collapse to one column when narrow */
+.deck-nav-zones {
+  display: grid; gap: clamp(28px, 5vw, 64px);
+  grid-template-columns: 1fr;
+}
+.deck-nav-zones:has(.deck-nav-zone--res) { grid-template-columns: 1.1fr 1fr; }
+
+.deck-nav-zlabel {
+  font-family: var(--font-body);
+  font-size: .68rem; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 14px;
+}
+.deck-nav-list { list-style: none; margin: 0; padding: 0; }
+.deck-nav-list > li { border-bottom: 1px dashed var(--rule-strong); }
+.deck-nav-res { display: flex; align-items: stretch; gap: 8px; }
+.deck-nav-res .deck-nav-item { flex: 1; }
+
+/* one row = numeral + label (+ trailing arrow on links) */
+.deck-nav-item {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: baseline;
+  gap: 16px; width: 100%; text-align: left;
+  padding: 16px 4px; background: transparent; border: 0; cursor: pointer;
+  text-decoration: none; color: var(--ink);
+  font-family: var(--font-body); font-size: 1.05rem;
+  transition: color .14s ease, padding-left .14s ease;
+}
+.deck-nav-item:hover,
+.deck-nav-item:focus-visible { color: var(--accent); padding-left: 10px; }
+.deck-nav-item:focus-visible { outline: none; }
+.deck-nav-num {
+  font-family: var(--font-title); font-synthesis: none; font-weight: 300;
+  font-size: 1.5rem; color: var(--num-faint);
+  font-variant-numeric: tabular-nums; transition: color .14s ease;
+}
+.deck-nav-item:hover .deck-nav-num,
+.deck-nav-item:focus-visible .deck-nav-num { color: var(--accent); }
+.deck-nav-label { font-weight: 600; }
+.deck-nav-desc {
+  display: block; margin-top: 4px; font-weight: 400; font-size: .85rem;
+  color: var(--muted); max-width: 42ch; line-height: 1.5;
+}
+.deck-nav-arw { color: var(--gold); transition: transform .14s ease; }
+.deck-nav-item--link:hover .deck-nav-arw { transform: translateX(4px); color: var(--accent); }
+.deck-nav-pdf {
+  flex: none; align-self: center;
+  font-family: var(--font-body); font-size: .68rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--gold); text-decoration: none;
+  white-space: nowrap; padding: 0 4px;
+}
+.deck-nav-pdf:hover { color: var(--accent); }
+
+/* ---- panel: drawer (slide-in from the right) -------------- */
+.deck-nav-overlay[data-nav-style="drawer"] { justify-content: flex-end; }
+.deck-nav-overlay[data-nav-style="drawer"] .deck-nav-panel {
+  margin: 0; width: min(460px, 92vw); max-width: none; height: 100svh;
+  background: var(--surface); border-left: 1px solid var(--rule-strong);
+  padding: clamp(32px, 5vh, 56px) clamp(24px, 4vw, 40px);
+  transform: translateX(24px);
+}
+.deck-nav-overlay[data-nav-style="drawer"].is-open .deck-nav-panel { transform: none; }
+.deck-nav-overlay[data-nav-style="drawer"] .deck-nav-zones { grid-template-columns: 1fr; }
+.deck-nav-overlay[data-nav-style="drawer"]:has(.deck-nav-zone--res) .deck-nav-zones {
+  grid-template-columns: 1fr;
+}
+
+/* ---- responsive ------------------------------------------- */
+@media (max-width: 720px) {
+  .deck-nav-zones,
+  .deck-nav-zones:has(.deck-nav-zone--res) { grid-template-columns: 1fr; gap: 32px; }
+  .deck-nav-btn--toggle { bottom: 16px; }
+}
+
+/* ---- reduced motion --------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .deck-nav-overlay,
+  .deck-nav-panel { transition: none; }
+  .deck-nav-panel { transform: none !important; }
+}
+
+@media print { .deck-nav-btn, .deck-nav-overlay { display: none !important; } }
