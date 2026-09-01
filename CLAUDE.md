@@ -13,7 +13,7 @@ a paired design system.
 - **Public, MIT** (`mvcrft/deck-framework`). Pairs with
   **`movecraft-design-system`** (the skin). One repo each — the private/open
   twins were collapsed 2026-09-01; old private history is archived in
-  `~/Desktop/MDI/_archive/deck-framework-private.bundle`.
+  `~/Desktop/Movecraft/_archive/deck-framework-private.bundle`.
 - This repo stays font/brand-agnostic and free of any CoH/MDI content.
 
 ## Files
