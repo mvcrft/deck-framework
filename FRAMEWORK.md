@@ -5,9 +5,9 @@ keyboard + presentation-remote nav, light/dark, and a configurable
 navigation component. **The design and the engine are two separate git
 repos** so they evolve independently:
 
-- **`deck-framework-open`** (this repo) — the engine: structure, nav, behavior.
+- **`deck-framework`** (this repo) — the engine: structure, nav, behavior.
   Hardcodes no colors or fonts; consumes CSS variables.
-- **`movecraft-design-system-open`** (sibling repo) — the skin: design tokens +
+- **`movecraft-design-system`** (sibling repo) — the skin: design tokens +
   fonts. Swap this to re-theme; the framework never changes.
 
 ## Reuse in a new project
@@ -15,25 +15,25 @@ repos** so they evolve independently:
 Clone both repos as siblings (or add them as submodules):
 ```
 your-project/
-├── movecraft-design-system-open/   git clone git@github.com:mvcrft/movecraft-design-system-open
-├── deck-framework-open/            git clone git@github.com:mvcrft/deck-framework-open
+├── movecraft-design-system/   git clone git@github.com:mvcrft/movecraft-design-system
+├── deck-framework/            git clone git@github.com:mvcrft/deck-framework
 └── my-deck/index.html
 ```
 Your `index.html` loads the design system, then the framework:
 ```html
 <!-- design system -->
-<link rel="stylesheet" href="../movecraft-design-system-open/theme-movecraft.css">
-<link rel="stylesheet" href="../movecraft-design-system-open/fonts.css">
-<link rel="stylesheet" href="../movecraft-design-system-open/components.css"> <!-- if using mv-card / mv-btn / etc -->
+<link rel="stylesheet" href="../movecraft-design-system/theme-movecraft.css">
+<link rel="stylesheet" href="../movecraft-design-system/fonts.css"> <!-- open fonts; or fonts-licensed.css for the branded faces -->
+<link rel="stylesheet" href="../movecraft-design-system/components.css"> <!-- if using mv-card / mv-btn / etc -->
 <!-- framework -->
-<link rel="stylesheet" href="../deck-framework-open/deck.css">
-<link rel="stylesheet" href="../deck-framework-open/deck-nav.css">   <!-- if using the nav -->
+<link rel="stylesheet" href="../deck-framework/deck.css">
+<link rel="stylesheet" href="../deck-framework/deck-nav.css">   <!-- if using the nav -->
 ...
-<script src="../deck-framework-open/deck.js"></script>
-<script src="../deck-framework-open/deck-nav.js"></script>
+<script src="../deck-framework/deck.js"></script>
+<script src="../deck-framework/deck-nav.js"></script>
 ```
 To re-skin, point at a different design-system repo — nothing in
-`deck-framework-open` changes.
+`deck-framework` changes.
 
 ## Files (this repo)
 
@@ -45,9 +45,12 @@ To re-skin, point at a different design-system repo — nothing in
 | `deck-nav.js` | The nav component (menu / toc / toggle / off). |
 | `logo.svg` | Footer mark. |
 | `nav-showcase.html` | Live demo (references the sibling design system). |
+| `build-nav-artifact.mjs` | Builds `nav-showcase.artifact.html`, a self-contained (CSS/JS/fonts inlined) copy of the demo for a Claude Artifact. Fetches the open woff2 at build time; output is gitignored. |
 
-Design tokens + fonts live in the **`movecraft-design-system-open`** repo
-(`theme-movecraft.css`, `fonts.css` — open Google-hosted fonts).
+Design tokens + fonts live in the **`movecraft-design-system`** repo. It ships
+two font sets — `fonts.css` (open Google-hosted Newsreader/Hanken, the default)
+and `fonts-licensed.css` (branded Outsiders/Battersea; needs its `fonts/` woff2
+via `./fetch-fonts.sh`, which are gitignored there). A deck links exactly one.
 
 ## Serve it (don't double-click)
 
@@ -55,7 +58,7 @@ Fonts are referenced woff2, so **Chrome blocks them over `file://`** — serve
 over http from the **parent** dir so the sibling paths resolve:
 ```
 cd your-project && python3 -m http.server 8791
-# open http://localhost:8791/deck-framework-open/nav-showcase.html
+# open http://localhost:8791/deck-framework/nav-showcase.html
 ```
 
 ## The nav component (`deck-nav`)
